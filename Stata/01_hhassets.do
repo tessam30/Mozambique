@@ -21,7 +21,7 @@ use "$pathmen/MZMR62FL.DTA", clear
 * Remove visitors from household to not convolute occupations
 	drop if mv135 == 2
 
-* Check how many unique household there are: 4,660
+* Check how many unique household there are: 3,951
 	egen tag = tag(mv001 mv002)
 	tab tag, mi
 
@@ -30,15 +30,19 @@ use "$pathmen/MZMR62FL.DTA", clear
 	bys mv001 mv002: g occupationM = mv717 if mv150 == 1
 
 	bys mv001 mv002: g headLit = mv155 if mv150 == 1
-	recode headLit (3 4 = 1)
+	recode headLit (3 4 = 0)
 	lab val headLit MV155
 
 	la var occupation "Occupation of male head"
 	la var headLit "Literacy status of male head"
 
-	include "$pathdo/Programs/copylabels.do"
-	collapse (max) occupationM headLit, by(mv001 mv002)
-	include "$pathdo/Programs/attachlabels.do"
+	clonevar educMen = mv106
+	clonevar educMenDetail = mv107
+	clonevar educMenYears = mv133
+	
+	copylabels
+	collapse (max) occupationM headLit educMen educMenDetail educMenYears, by(mv001 mv002)
+	attachlabels
 
 	lab val headLit MV155
 	lab val occupationM MV717
@@ -51,13 +55,13 @@ clear
 *********************************************
 * Add in data about female occupation in hh *
 *********************************************
-use "$pathwomen/RWIR70FL.DTA", clear
+use "$pathwomen/MZIR62FL.DTA", clear
 	bys v001 v002: g occupationF = v717 if v150 == 1
 	recode v467d (1 = 1 "big problem")(2 = 0 "not a big problem"), gen(distHC)
 	
-	include "$pathdo/Programs/copylabels.do"
+	copylabels
 	collapse (max) occupationF distHC, by(v001 v002)
-	include "$pathdo/Programs/attachlabels.do"
+	attachlabels
 
 	lab val occupationF V717
 
@@ -66,7 +70,7 @@ save "$pathout/hh_occupF.dta", replace
 ***********************************************
 * Adding in personal records for demographics *
 ***********************************************
-use "$pathroster/RWPR70FL.dta", clear
+use "$pathroster/MZPR62FL.dta", clear
 
 * Household composition of women; Is it an older or younger household?
 * Note: These need to be summed when collapsing to the household level
@@ -76,15 +80,15 @@ use "$pathroster/RWPR70FL.dta", clear
 	clonevar hhsize = hv012
 	clonevar numChildUnd5 = hv014
 
-	clonevar maleEduc 	= hb68
+	*clonevar maleEduc 	= hb68
 	clonevar femaleEduc = ha68 
-	clonevar motherEduc = hvc68
+	*clonevar motherEduc = hvc68
 
 
-include "$pathdo/Programs/copylabels.do"
-	collapse (max) hhsize numChildUnd5 maleEduc femaleEduc /*
-	*/ motherEduc (sum) numWomen15_25 numWomen26_65, by(hv001 hv002)
-include "$pathdo/Programs/attachlabels.do"
+	copylabels
+		collapse (max) hhsize numChildUnd5 femaleEduc /*
+		*/  (sum) numWomen15_25 numWomen26_65, by(hv001 hv002)
+	attachlabels
 
 	ren (hv001 hv002)(v001 v002)
 	isid v001 v002
@@ -100,7 +104,7 @@ save "$pathout/hhdemog.dta", replace
 
 ********************
 * Household info *
-use "$pathhh/RWHR70FL.dta", clear
+use "$pathhh/MZHR62FL.dta", clear
 
 * Replicating work done in 02_RW_cleanDHS_hh.r
 /* Create a unique id for merging (not that compliciated! -- see: 
@@ -125,7 +129,7 @@ use "$pathhh/RWHR70FL.dta", clear
 	clonevar strata		= hv022
 	clonevar province	= hv024
 	clonevar altitude	= hv040
-	clonevar district 	= shdistrict
+	*clonevar district 	= shdistrict
 
 	g hhweight = hv005 / 1000000
 	g maleweight = hv028/1000000
@@ -149,7 +153,7 @@ use "$pathhh/RWHR70FL.dta", clear
 	la var handwashObs "Observed handwashing station"
 	rename (hv206 hv207 hv208 hv209 hv210 hv211 hv212 hv243a)(electricity radio tv refrig bike moto car mobile)
 
-	recode hv213 (11 12 = 1 "earth, sand, dung")(33 34 35 96 = 0 "ceramic or better"), gen(dirtfloor)
+	recode hv213 (11 13 = 1 "earth, sand, dung")(21 22 31 32 34 96 = 0 "ceramic or better"), gen(dirtfloor)
 	clonevar hhrooms = hv216
 	g roomPC = hhrooms / hhsize
 	la var roomPC "rooms per hh size"
