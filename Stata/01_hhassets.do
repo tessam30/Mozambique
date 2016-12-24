@@ -176,12 +176,14 @@ use "$pathhh/MZHR62FL.dta", clear
 	Piped water into dwelling - 10, 11
 	Piped water to yard/plot - 12
 	Public tap or standpipe - 13
+	*** Neighbor's house - 14 **** 
 	Tubewell or borehole - 20, 21
 	Protected dug well - 30, 31
 	Protected spring - 41
 	Rainwater - 51
 */
-g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
+g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 14, 20, 21, 30, 31, 33, 41, 51)
+* This derivation seems to match the DHS stats on pp 
 
 /* UNIMPROVED WATER
 	Unprotected spring - 42
@@ -191,8 +193,11 @@ g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
 	Surface water - 43
 	Bottled water - 71
 */
-g byte unimprovedWater = inlist(hv201, 32, 42, 43, 61, 62, 71) 
+g byte unimprovedWater = inlist(hv201, 32, 40, 42, 43, 61, 62, 71) 
 g byte waterLake = inlist(hv201, 43)
+
+
+* STOPPED HERE
 
 /* IMPROVED SANITATION & not shared [ & (hv225 == 0)]
 	Flush toilet - 10
