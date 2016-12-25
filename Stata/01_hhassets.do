@@ -127,8 +127,9 @@ use "$pathhh/MZHR62FL.dta", clear
 	clonevar intdate	= hv008
 	clonevar psu		= hv021
 	clonevar strata		= hv022
-	clonevar province	= hv024
+	clonevar region		= hv024
 	clonevar altitude	= hv040
+
 	*clonevar district 	= shdistrict
 
 	g hhweight = hv005 / 1000000
@@ -183,7 +184,8 @@ use "$pathhh/MZHR62FL.dta", clear
 	Rainwater - 51
 */
 g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 14, 20, 21, 30, 31, 33, 41, 51)
-* This derivation seems to match the DHS stats on pp 
+tab improvedWater [iweight = hhweight]
+* This derivation nearly matches the DHS stats on pp 
 
 /* UNIMPROVED WATER
 	Unprotected spring - 42
@@ -197,19 +199,22 @@ g byte unimprovedWater = inlist(hv201, 32, 40, 42, 43, 61, 62, 71)
 g byte waterLake = inlist(hv201, 43)
 
 
-* STOPPED HERE
-
 /* IMPROVED SANITATION & not shared [ & (hv225 == 0)]
-	Flush toilet - 10
-	Piped sewer system - 11
-	Septic tank - 12
-	Flush/pour flush to pit latrine - 13
-	Ventilated improved pit latrine (VIP) - 21
-	Pit latrine with slab - 20
-	Composting toilet - 41
+	* 10 - Flush toilet 
+	* 11 - Piped sewer system 
+	* 12 - Septic tank 
+	* 13 - Flush/pour flush to pit latrine
+	21 - Ventilated improved pit latrine (VIP) 
+	* 20 - Pit toilet latrine 
+	22 - Pit latrine with slab 
+	*41 - Composting toilet
 	Special case 
+	
+	Only options are 15, 16, 21, 22, 23, 31
 	*/
-g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22) & hv225 == 0
+	
+g byte improvedSanit = inlist(hv205, 21, 22) & hv225 == 1
+tab improvedSanit [iweight = hhweight]
 
 /* UNIMPROVED SANITATION  
 	Flush/pour flush to elsewhere - 14, 15
@@ -220,9 +225,11 @@ g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22) & hv225 == 
 	No facilities or bush or field - 30, 31, 96
 	*/
 
-g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96)  | hv225 == 1
+g byte unimprovedSanit = inlist(hv205, 15, 16, 23, 31)  | hv225 == 1
 
-
+svyset [pweight= hhweight], psu(psu) strata(strata)
+tab unimprovedSanit [iweight = hhweight]
+svy:mean unimprovedSanit, over(region)
 
 **********************************************
 * HH Landholding for agricultural production *
@@ -250,7 +257,8 @@ chxTLU includes all small animals (chicken, fowl, etc).*/
 	g chxVal 	= 0.01
 
 * Decode unknown values to be missing not zero (affects few obs) and strip labels
-	mvdecode hv246a hv246b hv246j, mv(98)
+	sum hv246*
+	mvdecode hv246b hv246c hv246d hv246e hv246f hv246g, mv(98)
 	_strip_labels hv246a-hv246j
 
 /* So it appears that hv246b has two components hv246i hv246j, being milk cows
@@ -260,17 +268,17 @@ chxTLU includes all small animals (chicken, fowl, etc).*/
    egen testcow = rowtotal( hv246i hv246j)
    assert testcow == hv246b
  */
-   
-	rename (hv246a hv246c hv246d hv246e hv246f hv246g hv246h hv246i hv246j)/*
-		  */ (cowtrad horse goat sheep chicken pig rabbit cowmilk cowbull) 
+   * There is no values for hv246a -- ignored in t formula below
+	rename (hv246a hv246b hv246c hv246d hv246e hv246f hv246g)/*
+		  */ (cowtrad cow horse goat sheep chicken pig) 
 *summarize results to check min / max
-	sum cowtrad-cowbull
+	sum cowtrad-pig
 			
-	g tlucattle = (cowtrad + cowmilk + cowbull) * cattleVal	  
+	g tlucattle = (cow) * cattleVal	  
 	g tlusheep 	= (sheep + goat) * sheepVal
 	g tluhorses = (horse) * horsesVal
 	g tlupig 	= (pig) * pigVal
-	g tluchx 	= (rabbit + chicken) * chxVal
+	g tluchx 	= (chicken) * chxVal
 
 * Generate overall tlus
 	egen tlutotal = rsum(tlucattle tlusheep tluhorses tlupig tluchx)
@@ -296,17 +304,17 @@ chxTLU includes all small animals (chicken, fowl, etc).*/
 * drop extra data
 aorder
 
-#delimit ;
-ds(ha0* ha1* ha2* ha3* ha4* ha5* ha6* ha7* hb* hc* 
-	hmhid* hml* hv* hvidx* sh1* sh2* sh03* sh4* idxh*
-	shel*), not;
-keep `r(varlist)';
-#delimit cr
+	#delimit ;
+	ds(ha0* ha1* ha2* ha3* ha4* ha5* ha6* ha7* hc* 
+		hmhid* hml* hv* hvidx* sh1* sh2*  idxh* shread*
+		), not;
+	keep `r(varlist)';
+	#delimit cr
 
 * Check for value labels and clean up ones that do not make sense
 local labCheck agehead bankAcount bednet bike car dirtfloor /*
-		*/ district electricity femhead handwash landless /*
-		*/  landowned livestock mobile moto province radio /*
+		*/ region electricity femhead handwash landless /*
+		*/  landowned livestock mobile moto radio /*
 		*/ refrig rural smoker strata toilet toiletShare /*
 		*/ treatwater tv
 
@@ -330,13 +338,13 @@ _strip_labels agehead
 	svy: mean livestock, over(rural)
 
 * Sort and create coef plot of district values
-	svy: mean landless, over(district)
+	svy: mean landless, over(region)
 	matrix plot = r(table)'
 	matsort plot 1 "down"
 	matrix plot = plot'
 	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,]))
 
-* Captilize value label list so that it seemlessly merges into ArcGIS shapefile
+/* Captilize value label list so that it seemlessly merges into ArcGIS shapefile
 	local varname district
 	local sLabelName: value label `varname'
 	di "`sLabelName'"
@@ -349,6 +357,7 @@ foreach x of local xValues {
     label define `sLabelName' `x' "`sLabelNew'", modify
 }
 *end
+*/
 
 merge 1:1 v001 v002 using "$pathout/hhdemog.dta", gen(_demog)
 clonevar dhsclust = v001 

@@ -75,7 +75,7 @@ global pathdo "`dir'\Stata"
 
 
 * DHS specific paths
-global pathkids "`dir'/Datain/DHS2011/makr62dt"
+global pathkids "`dir'/Datain/DHS2011/mzkr62dt"
 global pathwomen "`dir'/Datain/DHS2011/mzir62dt"
 global pathmen "`dir'/Datain/DHS2011/mzmr62dt"
 global pathroster "`dir'/Datain/DHS2011/mzpr62dt"

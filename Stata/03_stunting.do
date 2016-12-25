@@ -12,20 +12,18 @@
 
 clear
 capture log close
-use "$pathkids\RWKR70FL.dta", clear
+use "$pathkids\MZKR62FL.dta", clear
 log using "02_stunting", replace
 
 * Flag children selected for anthropmetry measures
-g cweight = (v005/1000000)
-clonevar anthroTag = v042
-keep if anthroTag == 1
-clonevar DHSCLUST = v001
+	g cweight = (v005/1000000)
+	clonevar DHSCLUST = v001
 
 clonevar stunting = hw5
 clonevar stunting2 = hw70
 
 foreach x of varlist stunting stunting2 {
-	replace `x' = . if inlist(`x', 9998, 9996)
+	replace `x' = . if inlist(`x', 9996, 9997, 9998, 9999)
 	replace `x' = `x' / 100
 	}
 *end
@@ -57,8 +55,8 @@ la var age_stunting "age chunk average for stunting"
 
 * religion
 clonevar religion = v130
-recode religion (4 5 7 96 = 4)
-lab def rel 1 "catholic" 2 "protestant" 3 "adventist" 4 "other"
+recode religion (96 99 = 8)
+lab def rel 1 "Catholic" 2 "Islamic" 3 "Zion" 4 "Evangelical"  5 "Anglican" 6 "none" 7 "Protestant" 8 "other"
 la values religion rel
 
 * health outcomes
@@ -76,6 +74,8 @@ clonevar bfDuration	= m4
 clonevar bfMonths	= m5
 clonevar breastfeeding = v404
 clonevar anemia = v457
+
+* STOPPED HERE
 
 * Antenatal care visits (missing for about 25% of sample)
 recode m14 (3 = 2 "2-3 visits") (4/11 = 3 "4+ ANC visit")(. = 5 "missing"), gen(anc)
