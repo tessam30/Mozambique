@@ -302,7 +302,7 @@ chxTLU includes all small animals (chicken, fowl, etc).*/
 	drop *Val
 
 * drop extra data
-aorder
+
 
 	#delimit ;
 	ds(ha0* ha1* ha2* ha3* ha4* ha5* ha6* ha7* hc* 
@@ -311,6 +311,7 @@ aorder
 	keep `r(varlist)';
 	#delimit cr
 
+	
 * Check for value labels and clean up ones that do not make sense
 local labCheck agehead bankAcount bednet bike car dirtfloor /*
 		*/ region electricity femhead handwash landless /*

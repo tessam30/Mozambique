@@ -16,8 +16,9 @@ capture log close
 	import delimited using "$pathin/DHS2011/MZGE61FL_FEWSnet_livelihoods.txt", clear
 	save "$pathout/MZGE61FL_FEWSnet_livelihoods.dta", replace
 
-
-
 * Add in the remaining 2015 DHS data
 	merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
-	saveold "$pathout/RWA_DHS_Livelihoods.dta", replace
+	saveold "$pathout/MZB_DHS_Livelihoods.dta", replace
+		
+
+
