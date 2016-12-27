@@ -22,7 +22,7 @@ log using "$pathlog/02_livelihoodzone.log", replace
 			capture findfile `x'.txt
 				if _rc == 601 {
 				copy https://raw.githubusercontent.com/tessam30/Mozambique/master/tmpData/MZGE61FL_FTFZOI_flagged.txt/*
-				*/ $pathout/MZGE61FL_FTFZOI_flagged2.txt, replace 
+				*/ $pathout/MZGE61FL_FTFZOI_flagged.txt, replace 
 								}
 			else disp in yellow "`x' already exists in directory"
 		}
