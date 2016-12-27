@@ -33,8 +33,8 @@ foreach x of local required_ados {
 * Determine path for the study 
 *global projectpath "U:/"
 *global projectpath "C:/Users/t/Documents/"
-global projectpath "C:/Users/Tim/Documents/"
-*global projectpath "C:/Users/tessam/Documents"
+*global projectpath "C:/Users/Tim/Documents/"
+global projectpath "C:/Users/tessam/Documents"
 cd "$projectpath"
 
 * Run a macro to set up study folder (needs to be modified)
