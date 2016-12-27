@@ -282,7 +282,7 @@ preserve
 	ds(latnum longnum eligChild stunting2 stunted2);
 	#delimit cr
 	keep `r(varlist)'
-	keep if eligChild == 1
+	keep if eligChild == 1 & inlist(., latnum, longnum) != 1
 export delimited "$pathout/stunting.csv", replace
 restore
 

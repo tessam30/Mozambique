@@ -57,9 +57,21 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 
 * Survey set the data to account for complex sampling design
 	svyset psu [pw = cweight], strata(strata)
-
-	twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
-	*/ lpattern(dash) lcolor("199 199 199")) by(region) normal
+	svy:mean stunted2, over(region)
+	
+	labvalclone HV024 region2
+	recode region (1 = 4 "Niassa")(2 = 2 "Cabo Delgado")(3 = 1 "Nampula")(4 = 3 "Zambezia")/*
+	*/(5 = 5 "Tete")(6 = 6 "Manica")(7 = 7 "Sofala")(8 = 8 "Inhambane")(9 = 9 "Gaza") /*
+	*/(10 = 10 "Maputo Provincia")(11 = 11 "Maputo Cidade"), gen(region2)
+	
+	egen reg_stunt = mean(stunted2) if ftf_flag == 1, by(region2)
+	graph dot (mean) stunted2 reg_stunt  [pweight = cweight] if /*
+	*/ eligChild, over(region2, sort(2) descending)
+	
+	
+	twoway (kdensity stunting2 if ftf_flag == 1, lcolor("71 153 181")) /*
+	*/(kdensity stunting2 if ftf_flag == 0, lcolor("211 14 30")), xline(-2, lwidth(thin) /*
+	*/ lpattern(dash) lcolor("199 199 199")) by(region)
 
 * Show the distribituion of education on z-scores
 	twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) /*
