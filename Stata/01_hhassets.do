@@ -365,4 +365,3 @@ clonevar dhsclust = v001
 compress
 saveold "$pathout/DHS_hhvar.dta", replace
 log close
-

@@ -19,6 +19,8 @@ capture log close
 * Add in the remaining 2015 DHS data
 	merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
 	saveold "$pathout/MZB_DHS_Livelihoods.dta", replace
-		
+	
+	keep latnum longnum improvedSanit improvedWater wealth tlutotal dirtfloor handwashObs
+	export delimited "$pathexport/MZB_DHS_krigingHH.dta", replace	
 
-
+log close

@@ -277,7 +277,16 @@ saveold "$pathout/DHS_child.dta", replace
 g year = 2011
 save "$pathout/MZB_DHS_2011_analysis.dta", replace
 
+preserve
+	#delimit ;
+	ds(latnum longnum eligChild stunting2 stunted2);
+	#delimit cr
+	keep `r(varlist)'
+	keep if eligChild == 1
+export delimited "$pathout/stunting.csv", replace
+restore
+
 * Check that stats are close to report
 * Survey set the data to account for complex sampling design
 	svyset psu [pw = cweight], strata(strata)
-	svy:mean stunted2, over(region)
+	svy:mean modernContra, over(region)
