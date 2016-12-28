@@ -289,4 +289,4 @@ restore
 * Check that stats are close to report
 * Survey set the data to account for complex sampling design
 	svyset psu [pw = cweight], strata(strata)
-	svy:mean modernContra, over(region)
+	svy:mean stunted2, over(region)

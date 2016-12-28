@@ -66,8 +66,9 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 	
 	egen reg_stunt = mean(stunted2) if ftf_flag == 1, by(region2)
 	graph dot (mean) stunted2 reg_stunt  [pweight = cweight] if /*
-	*/ eligChild, over(region2, sort(2) descending)
+	*/ eligChild, over(region2, sort(1) descending)
 	
+	mean stunted2 [iw = cweight], over(region2 ftf_flag)
 	
 	twoway (kdensity stunting2 if ftf_flag == 1, lcolor("71 153 181")) /*
 	*/(kdensity stunting2 if ftf_flag == 0, lcolor("211 14 30")), xline(-2, lwidth(thin) /*
