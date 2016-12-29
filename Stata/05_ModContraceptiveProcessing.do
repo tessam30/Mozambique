@@ -14,7 +14,7 @@ log using "$pathlog/05_ModConProcessing", replace
 clear
 
 * Women are unit of analysis so we will be using the IR file.
-	use "$pathwomen/RWIR70FL.DTA"
+	use "$pathwomen/MZIR62FL.DTA"
 
 * Sampling weights and geography variables
 	g wweight = v005 / 1000000	
