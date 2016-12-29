@@ -177,12 +177,7 @@ The categories are: 1. Starchy staples (WDDS_starch)
 	the child DD score, which ranged from 0–15, and which was treated 
 	in the analysis as a continuous variable.					
 
-	The data on the foods given are only collected for the last child living 
-	with the mother, so you need to select if the child is 
-		1) alive, 
-		2) living with the mother, and 
-		3) was the last born child that is living with the mother.
-	(http://userforum.dhsprogram.com/index.php?t=msg&goto=9824&S=Google)				
+					
 
 	* Last child in the last 2 years living with mother
 	* age in months
@@ -244,6 +239,47 @@ sum starch - milk
 egen dietdiv = rowtotal(starch vegGreen vitA othFruit organ meat eggs legumes milk)
 
 *** END DIETARY DIVERSITY ***
+* -- Notes on filtering diet diversity children -- *
+	/* The data on the foods given are only collected for the last child living 
+		with the mother, so you need to select if the child is 
+		1) alive, 
+		2) living with the mother, and 
+		3) was the last born child that is living with the mother.
+	(http://userforum.dhsprogram.com/index.php?t=msg&goto=9824&S=Google) */
+		
+* Flag children who meet criteria for dietary diversity questions
+* Last child in the last 2 years living with mother
+	* age in months
+		gen age = v008-b3
+	
+	* drop if too old or not alive
+		g byte child_age_fltr  = (age < 24 & b5 == 1)
+	
+	* recode age into groups
+		recode age (0/1=1 "0-1")(2/3=2 "2-3")(4/5=3 "4-5")/*
+		*/ (6/8=4 "6-8")(9/11=5 "9-11")(12/17=6 "12-17") /*
+		*/ (18/23=7 "18-23")(24/59=.), gen(child_age)
+	
+	* tab of all living children born in the last 2 years
+		tab child_age
+		tab child_age [iw=v005/1000000]
+
+	* keep only those children living with mother ...
+		g byte live_with_moth_fltr = (b9 == 0)
+	
+	* ... and keep the last born of those
+		g byte lastBorn_fltr =  (_n > 0 & caseid == caseid[_n-1])
+	
+	* Flag those children who have dietary diversity data
+		g byte child_dietDiv = (child_age_fltr == 1 & /*
+		*/live_with_moth_fltr ==1 & lastBorn_fltr) 
+	
+	* check the deonimnator
+	tab child_age
+	tab child_age [iw=v005/1000000]
+
+
+
 
 
 * Keep subset of variables
