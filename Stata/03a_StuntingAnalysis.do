@@ -2,7 +2,7 @@
 # Name:		03a_StuntingAnalysis
 # Purpose:	Plot data and run stunting anlaysis models
 # Author:	Tim Essam, Ph.D.
-# Created:	2016/12/25
+# Created:	2017/01/01
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
 # License:	MIT License
 # Ado(s):	see below
@@ -46,7 +46,7 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 	*/yline(-2, lwidth(medium) lcolor("99 99 99")) xtitle(, size(small) /*
 	*/color("128 128 128")) xline(0, lwidth(medium) lcolor("99 99 99")) /*
 	*/title(Stunting outcomes appear to positively correlate with /*
-	*/elevation., size(small) color("99 99 99") span justification(left)) /*
+	*/wealth., size(small) color("99 99 99") span justification(left)) /*
 	*/ysca(alt) xsca(alt) xlabel(, grid gmax) legend(off) saving(main, replace)
 
 	twoway histogram stunting2, fraction xsca(alt reverse) ylabel(, grid gmax) horiz fxsize(25)  saving(hy, replace)
@@ -113,13 +113,19 @@ svy:mean stunting2, over(lvdzone)
 	matrix lvdzone = smean'
 mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
 
+
+
 * running a few other statistics
 	foreach x of varlist improvedSanit improvedWater wealthGroup religion {
 		svy:mean stunted2, over(`x')
 		}
 	*end
 	
-
+	graph dot (mean) stunted2 [pweight = cweight] if /*
+	*/ eligChild, over(religion, sort(1) descending)
+	pesort stunted2 [iw = cweight], over(religion)
+	
+	
 
 preserve
 	collapse (mean) stunted2 (count) n = stunted2, by(lvdzone)
@@ -230,24 +236,4 @@ coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
 
 
 
-
-/*
-* Quantile regression 
-sqreg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog, quantile(0.2 0.4 0.6 0.8) reps(100)
-*qplot stunting2, recast(line)
-grqreg, ci ols olsci
-
-* compare manually
-local x = 1
-forvalues i = 0.2(0.2)0.8 {
-	eststo bsqreq`x': bsqreg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2, quantile(`i')
-	local x = `++x'
-	}
-*end
-esttab bsqreq*, se star(* 0.10 ** 0.05 *** 0.01) label
-
-* Test for heteroskedasticity
-qui reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth
-estat hettest $matchar $hhchar $hhag $demog female $chldchar $chealth, iid
-*/
 
