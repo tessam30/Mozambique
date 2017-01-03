@@ -12,6 +12,7 @@ library(grDevices)
   
   # The viridis library has four functions to return hex colors
   col2rgb(viridis(5, alpha = 1, begin = 0, end = 1))
+  
 
   # to print w/out quotes
   ramp <- substr(viridis(n, alpha = 1, begin = 0, end = 1), 2, 7)
@@ -19,7 +20,9 @@ library(grDevices)
 
   # Interpolate NPR diverging palette
   nprGr <- c("#C94825",	"#ECB374",	"#EBE1BD",	"#61BDAB",	"#367C79")
-
+  nprContU <- c("#EBE1BD",	"#61BDAB",	"#367C79")
+  nprContL <- c("#C94825",	"#ECB374",	"#EBE1BD")
+  
   # To interpolate colors in R, use the colorRampPalette function 
   npr_pal <- colorRampPalette(nprGr, space = "rgb")
   npr_pal(n)
@@ -61,6 +64,7 @@ library(grDevices)
     }
   
   preview_color(nprGr, 20)
+  preview_color(plasma(5, alpha = 1, begin = 0, end = 1), 20)
   
   
   
