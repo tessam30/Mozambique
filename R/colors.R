@@ -42,7 +42,7 @@ library(grDevices)
  # Function to preview color ramps
   # x = length of interpolation
   # y = vector of colors to be interpolated and viewed
-  preview_color <- function(x, y) {
+  preview_color <- function(y, x = 7) {
     
     # First, create a function based on the color palette input vector
     cust_pal <- colorRampPalette(y)
@@ -60,7 +60,9 @@ library(grDevices)
     
     }
   
-
+  preview_color(nprGr, 20)
+  
+  
   
   # Call numbers as hsv, converting from rgb (pry a more direct way of doing this)
   rgb2hsv(col2rgb(magma(8, alpha = 0.6)))
