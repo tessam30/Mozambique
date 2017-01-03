@@ -69,6 +69,7 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 	*/ eligChild, over(region2, sort(1) descending)
 	
 	mean stunted2 [iw = cweight], over(region2 ftf_flag)
+	pesort stunted2 [iw = cweight], over(region2)
 	
 	twoway (kdensity stunting2 if ftf_flag == 1, lcolor("71 153 181")) /*
 	*/(kdensity stunting2 if ftf_flag == 0, lcolor("211 14 30")), xline(-2, lwidth(thin) /*
@@ -82,37 +83,26 @@ twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/*
 * Stopped here -- need to fix matrices and locals (TODO)
 
 * Check stunting over standard covariates
-svy:mean stunting2, over(region)
-svy:mean stunted2, over(region)
-matrix smean = r(table)
-matrix district = smean'
-mat2txt, matrix(district) saving("$pathxls/stunting_dist") replace
-
-* Create locals for reference lines in coefplot
-local stuntmean = smean[1,1]
-local lb = smean[5, 1]
-local ub = smean[6, 1]
-
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
-coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub')
+	svy:mean stunting2, over(region)
+	svy:mean stunted2, over(region)
+	matrix smean = r(table)
+	matrix district = smean'
+	mat2txt, matrix(district) saving("$pathxls/stunting_dist") replace
 
 * Create a table for export
-matrix district = e(_N)'
+	matrix district = e(_N)'
 	matrix stunt = smean'
 	matrix gis = district, stunt
 	mat2txt, matrix(gis) saving("$pathxls/region_stunting.csv") replace
 	matrix drop _all
 
 * Check stunting over livelihood zones
-encode lznamee, gen(lvdzone)
-svy:mean stunting2, over(lvdzone)
-	svy:mean stunted2, over(lvdzone)
-	matrix smean = r(table)
-	matrix lvdzone = smean'
-mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
-
+	encode lznamee, gen(lvdzone)
+		svy:mean stunting2, over(lvdzone)
+		svy:mean stunted2, over(lvdzone)
+		matrix smean = r(table)
+		matrix lvdzone = smean'
+	mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
 
 
 * running a few other statistics
@@ -125,8 +115,6 @@ mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
 	*/ eligChild, over(religion, sort(1) descending)
 	pesort stunted2 [iw = cweight], over(religion)
 	
-	
-
 preserve
 	collapse (mean) stunted2 (count) n = stunted2, by(lvdzone)
 	ren lvdzone LZNAMEE
@@ -140,22 +128,9 @@ preserve
 restore
 
 * Consider stunting over the livelihood zones.
-svy:mean stunted2
-
-mean stunted2, over(lvdzone)
-	cap matrix drop plot smean
-	matrix smean = r(table)
-	local stuntmean = smean[1,1]
-	local lb = smean[5, 1]
-	local ub = smean[6, 1]
-	matrix plot = r(table)'
-	matsort plot 1 "down"
-	matrix plot = plot'
-coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub')
-
 set matsize 1000
-pwmean stunting2, over(lvdzone) pveffects mcompare(tukey)
-pwmean stunted2, over(district) pveffects mcompare(tukey)
+
+pwmean stunted2, over(region) pveffects mcompare(tukey)
 
 * calculate moving average
 preserve
@@ -171,7 +146,6 @@ preserve
 	xtline(stuntedMA smoothStunt)
 restore
 
-
 export delimited "$pathout/stuntingAnalysis.csv", replace
 saveold "$pathout/stuntingAnalysis.dta", replace
 
@@ -186,8 +160,8 @@ save "$pathout/DHS_2015_stunting.dta", replace
 * Create groups for covariates as they map into conceptual framework for stunting
 	*NOTE: Birthweight is only completed for 6330 cases:
 	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
-	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
-	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless ib(3).religion"
+	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse ib(3).religion"
 	global hhag "tlutotal"
 	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
 	global demog "hhsize agehead hhchildUnd5"
@@ -199,41 +173,97 @@ save "$pathout/DHS_2015_stunting.dta", replace
 	global cluster2 "cluster(hhgroup)"
 
 * STOP: Check all globals for missing values!
-sum $matchar $hhchar $hhag $demog female $chldchar $chealth
+	sum $matchar $hhchar $hhag $demog female $chldchar $chealth
 
 * Be continuous versus binary
 est clear
-eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1339).intdate, $cluster 
-eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1339).intdate, $cluster 
-eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1339).intdate, $cluster or 
-eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1339).intdate, $cluster or
-eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1339).intdate, $cluster or 
-eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1339).intdate, $cluster or 
-esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+	eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/ $chealth $geog ib(1339).intdate, $cluster 
+	eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/ $chealth $geog2 ib(1339).intdate, $cluster 
+	eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog ib(1339).intdate, $cluster or 
+	eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog2 ib(1339).intdate, $cluster or
+	eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog ib(1339).intdate, $cluster or 
+	eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog2 ib(1339).intdate, $cluster or 
+	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
+
+* by gender
+*est clear
+	eststo sted2_f, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog /*
+		*/$chldchar $chealth $geog2 ib(1339).intdate if female == 1, $cluster 
+	eststo sted2_m, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog /*
+		*/$chldchar $chealth $geog2 ib(1339).intdate if female == 0, $cluster
 esttab sted* using "$pathout/`x'Wide.csv", wide mlabels(none) ar2 beta label replace not
 
 
-* by gender
-est clear
-eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate if female == 1, $cluster 
-eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate if female == 0, $cluster2 
-
 * Regional variations
 est clear
-local i = 0
-levelsof adm1name, local(levels)
-foreach x of local levels {
-	local name =  strtoname("`x'")
-	eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
-	*/ $hhag $demog female $chldchar $chealth $geog if adm1name == "`x'", $cluster 
-	local i = `++i'
-	}
-*
+	local i = 0
+	levelsof region, local(levels)
+	foreach x of local levels {
+			local name =  strtoname("`x'")
+			eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
+			*/ $hhag $demog female $chldchar $chealth $geog if region == `x', $cluster 
+			local i = `++i'
+		}
+*END
+
 esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
-coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
-*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
+	coefplot stunt__1 || stunt__2 || stunt__3 || stunt__4, drop(_cons ) /*
+	*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
 
 
+*** --- 2011 Subset analysis for those with dietary diversity recall variables ***
+
+clear
+	use "$pathout/MZB_DHS_2011_under24mo_analysis.dta", replace
+	tab fid_mozambique_livelihoods2013, mi
+	
+	* Stunting regression analysis using various models; 
+	g agechildsq = ageChild^2
+	la var rural "rural household" 
+	g altitude2 = altitude/1000
+	la var altitude2 "altitude divided by 1000"
+
+* Create groups for covariates as they map into conceptual framework for stunting
+	global matchar "dietdiv motherBWeight motherBMI motherEd femhead orsKnowledge"
+	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless ib(3).religion mobile"
+	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global hhag "tlutotal"
+	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+	global demog "hhsize agehead hhchildUnd5"
+	global chldchar "ageChild agechildsq birthOrder"
+	global chldchar2 "$chldchar2 birthWgt"
+	global chealth "intParasites vitaminA diarrhea anemia"
+	global geog "altitude2 rural"
+	global geog2 "altitude2 ib(5).region "
+	global cluster "cluster(dhsclust)"
+	global cluster2 "cluster(hhgroup)"
+
+
+sum stunting2 stunted2 extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealths
+
+* Be continuous versus binary
+est clear
+	eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/ $chealth $geog ib(1339).intdate, $cluster 
+	eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/ $chealth $geog2 ib(1339).intdate, $cluster 
+	eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog ib(1339).intdate, $cluster or 
+	eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog2 ib(1339).intdate, $cluster or
+	eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog ib(1339).intdate, $cluster or 
+	eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar /*
+		*/$chealth $geog2 ib(1339).intdate, $cluster or 
+	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+* export results to .csv
+esttab sted* using "$pathout/`x'Wide2014_under24.csv", wide mlabels(none) ar2 pr2 beta label replace not
 
 
