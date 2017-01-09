@@ -83,10 +83,28 @@ use "$pathroster/MZPR62FL.dta", clear
 	*clonevar maleEduc 	= hb68
 	clonevar femaleEduc = ha68 
 	*clonevar motherEduc = hvc68
-
-
+	
+	g educHead = hv106 if (hv101 == 1)
+	la var educHead "hoh education"
+	g educHeadDetail = hv107 if (hv101 == 1)
+	la var educHeadDetail "hoh education in highest years"
+	
+	g byte marriedHead = (hv116 == 1) & (hv101 == 1)
+	la var marriedHead "hoh is currently married"
+	
+	g byte treatWater = (hv237 == 1)
+	la var treatWater "household treats water"
+	
+	g byte animalCart = (hv243c == 1)
+	la var animalCart "household owns animal cart"
+	
+	g byte mosqSpray = (hv253 == 1)
+	la var mosqSpray "dwelling sprayed for mosquitos"
+	
+	
 	copylabels
-		collapse (max) hhsize numChildUnd5 femaleEduc /*
+		collapse (max) hhsize numChildUnd5 femaleEduc educHead educHeadDetail /*
+		*/ marriedHead treatWater animalCart mosqSpray /*
 		*/  (sum) numWomen15_25 numWomen26_65, by(hv001 hv002)
 	attachlabels
 

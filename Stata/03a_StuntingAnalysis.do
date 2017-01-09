@@ -123,7 +123,7 @@ restore
 
 preserve
 	keep if eligChild == 1
-	keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamef lvdzone alt_gps dhsclust ageChild religion
+	keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamee lvdzone alt_gps dhsclust ageChild religion
 	export delimited "$pathxls\RWA_2014_DHS_stunting.csv", replace
 restore
 
@@ -199,7 +199,6 @@ est clear
 	eststo sted2_m, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog /*
 		*/$chldchar $chealth $geog2 ib(1339).intdate if female == 0, $cluster
 esttab sted* using "$pathout/`x'Wide.csv", wide mlabels(none) ar2 beta label replace not
-
 
 * Regional variations
 est clear
