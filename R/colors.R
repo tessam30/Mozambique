@@ -70,7 +70,7 @@ library(grDevices)
     
     }
   
-  preview_color(nprGr, 20)
+  preview_color(nprGr, 5)
   preview_color(plasma(5, alpha = 1, begin = 0, end = 1), 20)
   preview_color(waPoPrGr, 20)
   preview_color(nytYellow, 10)
