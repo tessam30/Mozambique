@@ -335,3 +335,16 @@ restore
 * Survey set the data to account for complex sampling design
 	svyset psu [pw = cweight], strata(strata)
 	svy:mean stunted2, over(region)
+		
+	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
+	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,]))
+	
+* Compare Nampula to other regions
+	foreach name in "Niassa" "Nampula" "Zambezia" "Tete" "Manica" "Sofala" "Inhambane" "Gaza" {
+		lincom [stunted2]_subpop_2 - [stunted2]`name'
+		}
+		*end
+	
+	
