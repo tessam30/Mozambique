@@ -44,7 +44,9 @@ log using "$pathlog/02_livelihoodzone.log", replace
 
 	saveold "$pathout/MZB_DHS_Livelihoods.dta", replace
 	
-	keep latnum longnum improvedSanit improvedWater wealth tlutotal dirtfloor handwashObs ftf_flag
+	keep latnum longnum improvedSanit improvedWater wealth tlutotal dirtfloor handwashObs ftf_flag rural 
 	export delimited "$pathexport/MZB_DHS_krigingHH.txt", replace	
-
+	*Per request of Ryan Fong (1/31/	
+	export delimited "$pathexport/MZB_DHS_krigingHH_Rural.txt" if rural == 1, replace
+	
 log close
