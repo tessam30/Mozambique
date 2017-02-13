@@ -41,7 +41,6 @@ log using "$pathlog/02_livelihoodzone.log", replace
 
 * Add in the remaining 2015 DHS data
 	merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
-
 	saveold "$pathout/MZB_DHS_Livelihoods.dta", replace
 	
 	* Calculate wealth differences by region
@@ -50,10 +49,20 @@ log using "$pathlog/02_livelihoodzone.log", replace
 	
 	pesort wealth [iweight = hhweight], over(region)
 	
+
+	preserve
+	keep latnum longnum improvedSanit improvedWater wealth tlutotal dirtfloor handwashObs ftf_flag rural 
+	export delimited "$pathexport/MZB_DHS_krigingHH.txt", replace	
+	*Per request of Ryan Fong (1/31/2017) 	
+	export delimited "$pathexport/MZB_DHS_krigingHH_Rural.txt" if rural == 1, replace
+	restore
 	
-	
-	
+		
 	keep latnum longnum improvedSanit improvedWater wealth tlutotal dirtfloor handwashObs ftf_flag
 	export delimited "$pathexport/MZB_DHS_krigingHH.txt", replace	
 
 log close
+
+
+
+
