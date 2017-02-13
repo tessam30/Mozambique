@@ -320,8 +320,6 @@ chxTLU includes all small animals (chicken, fowl, etc).*/
 	drop *Val
 
 * drop extra data
-
-
 	#delimit ;
 	ds(ha0* ha1* ha2* ha3* ha4* ha5* ha6* ha7* hc* 
 		hmhid* hml* hv* hvidx* sh1* sh2*  idxh* shread*

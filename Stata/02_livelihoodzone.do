@@ -44,6 +44,15 @@ log using "$pathlog/02_livelihoodzone.log", replace
 
 	saveold "$pathout/MZB_DHS_Livelihoods.dta", replace
 	
+	* Calculate wealth differences by region
+	svyset psu [pw = hhweight], strata(strata)
+	svy: mean wealth, over(region)
+	
+	pesort wealth [iweight = hhweight], over(region)
+	
+	
+	
+	
 	keep latnum longnum improvedSanit improvedWater wealth tlutotal dirtfloor handwashObs ftf_flag
 	export delimited "$pathexport/MZB_DHS_krigingHH.txt", replace	
 
